@@ -13,6 +13,10 @@ export type Status =
   | 'Bald prüfen'
   | 'Zeitnah verwenden oder prüfen'
   | 'Verbraucht'
+  | 'Weggeworfen'
+
+// Warum ein Lebensmittel im Archiv gelandet ist (für die Bilanz)
+export type ArchivGrund = 'verbraucht' | 'weggeworfen'
 
 // Ein einzelnes Lebensmittel, wie es im localStorage gespeichert wird
 export interface Lebensmittel {
@@ -27,10 +31,22 @@ export interface Lebensmittel {
   notiz?: string
   verbraucht: boolean
   erstelltAm: string
+  verbrauchtAm?: string // ISO-Zeitpunkt, wann ins Archiv verschoben
+  archivGrund?: ArchivGrund // fehlt bei alten Einträgen -> gilt als verbraucht
 }
 
 // Werte, die im Formular eingegeben werden (id/verbraucht/erstelltAm kommen automatisch dazu)
 export type LebensmittelFormDaten = Omit<
   Lebensmittel,
-  'id' | 'verbraucht' | 'erstelltAm'
+  'id' | 'verbraucht' | 'erstelltAm' | 'verbrauchtAm' | 'archivGrund'
 >
+
+// Ein Eintrag auf der Einkaufsliste
+export interface Einkaufsposten {
+  id: string
+  name: string
+  menge: number
+  einheit: string
+  kategorie: string
+  lagerort: Lagerort
+}

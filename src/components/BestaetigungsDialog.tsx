@@ -1,27 +1,54 @@
-// Einfacher Bestätigungs-Dialog (als Overlay), z.B. bevor ein
-// Lebensmittel als "Verbraucht" markiert oder gelöscht wird.
+// Bestätigungs-Dialog (Overlay), z. B. vor "Verbraucht" oder "Löschen".
+// Schließt mit ESC oder Klick auf den Hintergrund.
 
+import { useEffect } from 'react'
 import { Button } from './Button'
 
 interface Props {
   titel: string
   text: string
+  bestaetigenText?: string
+  gefahr?: boolean
   onBestaetigen: () => void
   onAbbrechen: () => void
 }
 
-export function BestaetigungsDialog({ titel, text, onBestaetigen, onAbbrechen }: Props) {
+export function BestaetigungsDialog({
+  titel,
+  text,
+  bestaetigenText = 'Bestätigen',
+  gefahr = false,
+  onBestaetigen,
+  onAbbrechen,
+}: Props) {
+  useEffect(() => {
+    function beiTaste(e: KeyboardEvent) {
+      if (e.key === 'Escape') onAbbrechen()
+    }
+    window.addEventListener('keydown', beiTaste)
+    return () => window.removeEventListener('keydown', beiTaste)
+  }, [onAbbrechen])
+
   return (
-    <div className="dialog-overlay" role="dialog" aria-modal="true">
-      <div className="dialog">
-        <h3>{titel}</h3>
+    <div
+      className="dialog-overlay"
+      onClick={onAbbrechen}
+    >
+      <div
+        className="dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialog-titel"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 id="dialog-titel">{titel}</h3>
         <p>{text}</p>
         <div className="dialog__aktionen">
-          <Button variante="sekundaer" onClick={onAbbrechen}>
+          <Button variante="sekundaer" onClick={onAbbrechen} autoFocus>
             Abbrechen
           </Button>
-          <Button variante="primaer" onClick={onBestaetigen}>
-            Bestätigen
+          <Button variante={gefahr ? 'gefahr' : 'primaer'} onClick={onBestaetigen}>
+            {bestaetigenText}
           </Button>
         </div>
       </div>

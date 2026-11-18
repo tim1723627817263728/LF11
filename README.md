@@ -9,6 +9,18 @@ FreshTrack ist ein einfacher **MVP-Prototyp** (kein fertiges Produkt), der priva
 - Keine Anmeldung, kein Backend, keine Datenbank
 - Alle Daten liegen im **localStorage** des Browsers
 
+## Funktionen
+
+- **Heute:** Zähler nach Status, Hinweis auf zeitnah ablaufende Lebensmittel und die Bilanz
+- **Lebensmittel:** Suche, Filter (Lagerort/Status), Sortierung, Mehrfachauswahl
+- **Aktionen pro Lebensmittel:** Verbraucht, Weggeworfen, Rest anpassen (z. B. "zur Hälfte verbraucht"), Bearbeiten, Löschen
+- **Hinzufügen:** Schnellauswahl für häufige Produkte (mit typischer Haltbarkeit), Dezimalkomma bei Mengen
+- **Einkaufsliste:** Artikel notieren, per "In Vorrat" nach dem Einkauf direkt erfassen
+- **Archiv:** Wiederherstellen, "Nochmal kaufen" (landet auf der Einkaufsliste), Bilanz verbraucht/weggeworfen
+- **Erinnerung:** Beim Start (einmal pro Browser-Sitzung) ein Hinweis auf dringende Lebensmittel
+- **Dark Mode:** Umschalter oben rechts, die Wahl wird gespeichert
+- **Beispieldaten zurücksetzen:** Knopf unten, praktisch für Vorführungen
+
 ## Projekt starten
 
 Voraussetzung: [Node.js](https://nodejs.org/) (Version 18 oder neuer) ist installiert.
@@ -31,7 +43,7 @@ npm run preview   # Zeigt die gebaute Version lokal an
 
 FreshTrack speichert **alle Lebensmittel-Daten direkt im Browser**, im sogenannten `localStorage`. Es gibt keinen Server und keine Datenbank.
 
-- Speicherort: `localStorage` des Browsers, unter dem Schlüssel `freshtrack_lebensmittel`
+- Speicherort: `localStorage` des Browsers, unter den Schlüsseln `freshtrack_lebensmittel` (Vorrat und Archiv), `freshtrack_einkaufsliste` und `freshtrack_theme`
 - Die Daten bleiben erhalten, solange du denselben Browser auf demselben Gerät benutzt und den Browser-Speicher nicht manuell löschst
 - Öffnest du die App in einem anderen Browser oder auf einem anderen Gerät, siehst du **andere Daten** (localStorage ist immer an einen Browser gebunden)
 - Löschst du den Browser-Cache/-Speicher (z. B. über "Browserdaten löschen"), gehen die FreshTrack-Daten verloren

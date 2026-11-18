@@ -1,62 +1,98 @@
-// Startseite der App: zeigt eine kurze Zusammenfassung
-// und die nächsten fünf Lebensmittel, die geprüft/verwendet werden sollten.
+// Startseite: Zusammenfassung nach Status und die fünf Lebensmittel,
+// die als Nächstes geprüft/verwendet werden sollten.
 
-import type { Lebensmittel } from '../types/food'
-import { berechneStatus, tageBisDatum } from '../utils/status'
+import type { Lebensmittel, Status } from '../types/food'
+import {
+  berechneStatus,
+  restzeitText,
+  tageBisDatum,
+  vergleicheDringlichkeit,
+} from '../utils/status'
+import { formatiereDatum } from '../utils/datum'
 import { StatusBadge } from '../components/StatusBadge'
 import { Button } from '../components/Button'
+import { Bilanz } from '../components/Bilanz'
 
 interface Props {
   aktiveLebensmittel: Lebensmittel[]
+  archivierteLebensmittel: Lebensmittel[]
   onLebensmittelHinzufuegen: () => void
+  onAlleAnzeigen: () => void
 }
 
-export function Dashboard({ aktiveLebensmittel, onLebensmittelHinzufuegen }: Props) {
-  // Sortiere nach Datum aufsteigend und nimm die ersten 5
-  const dringendeListe = [...aktiveLebensmittel]
-    .sort((a, b) => a.datum.localeCompare(b.datum))
-    .slice(0, 5)
+const ZAEHLER: { status: Status; klasse: string; label: string }[] = [
+  { status: 'Zeitnah verwenden oder prüfen', klasse: 'zeitnah', label: 'Zeitnah prüfen' },
+  { status: 'Bald prüfen', klasse: 'bald', label: 'Bald prüfen' },
+  { status: 'Frisch', klasse: 'frisch', label: 'Frisch' },
+]
+
+export function Dashboard({
+  aktiveLebensmittel,
+  archivierteLebensmittel,
+  onLebensmittelHinzufuegen,
+  onAlleAnzeigen,
+}: Props) {
+  const dringendeListe = [...aktiveLebensmittel].sort(vergleicheDringlichkeit).slice(0, 5)
+  const anzahlZeitnah = aktiveLebensmittel.filter(
+    (lm) => berechneStatus(lm) === 'Zeitnah verwenden oder prüfen',
+  ).length
 
   return (
-    <section className="dashboard">
+    <section className="seite seite--schmal">
       <h1>Dein Überblick für heute</h1>
 
-      <div className="dashboard__stat">
-        <span className="dashboard__stat-zahl">{aktiveLebensmittel.length}</span>
-        <span className="dashboard__stat-text">aktive Lebensmittel</span>
+      {anzahlZeitnah > 0 && (
+        <p className="erinnerung" role="status">
+          {anzahlZeitnah === 1
+            ? '1 Lebensmittel sollte zeitnah verwendet oder geprüft werden.'
+            : `${anzahlZeitnah} Lebensmittel sollten zeitnah verwendet oder geprüft werden.`}
+        </p>
+      )}
+
+      <div className="zaehler">
+        {ZAEHLER.map((z) => (
+          <div key={z.status} className={`zaehler__feld zaehler__feld--${z.klasse}`}>
+            <span className="zaehler__zahl">
+              {aktiveLebensmittel.filter((lm) => berechneStatus(lm) === z.status).length}
+            </span>
+            <span className="zaehler__text">{z.label}</span>
+          </div>
+        ))}
       </div>
+
+      <Bilanz archiv={archivierteLebensmittel} />
 
       <h2>Zuerst verwenden oder prüfen</h2>
 
       {dringendeListe.length === 0 ? (
-        <p className="dashboard__leer">
-          Aktuell keine aktiven Lebensmittel vorhanden.
-        </p>
+        <p className="leer">Aktuell keine aktiven Lebensmittel vorhanden.</p>
       ) : (
         <ul className="dashboard__liste">
-          {dringendeListe.map((lebensmittel) => {
-            const status = berechneStatus(lebensmittel)
-            const tage = tageBisDatum(lebensmittel.datum)
-            return (
-              <li key={lebensmittel.id} className="dashboard__eintrag">
-                <div className="dashboard__eintrag-info">
-                  <strong>{lebensmittel.name}</strong>
-                  <span className="dashboard__eintrag-datum">
-                    {lebensmittel.datumsart}: {lebensmittel.datum} (
-                    {tage >= 0 ? `noch ${tage} Tag(e)` : `${Math.abs(tage)} Tag(e) überfällig`}
-                    )
-                  </span>
-                </div>
-                <StatusBadge status={status} />
-              </li>
-            )
-          })}
+          {dringendeListe.map((lebensmittel) => (
+            <li key={lebensmittel.id} className="dashboard__eintrag">
+              <div className="dashboard__eintrag-info">
+                <strong>{lebensmittel.name}</strong>
+                <span className="dashboard__eintrag-datum">
+                  {lebensmittel.datumsart}: {formatiereDatum(lebensmittel.datum)} ·{' '}
+                  {restzeitText(tageBisDatum(lebensmittel.datum))}
+                </span>
+              </div>
+              <StatusBadge status={berechneStatus(lebensmittel)} />
+            </li>
+          ))}
         </ul>
       )}
 
-      <Button variante="primaer" onClick={onLebensmittelHinzufuegen} className="dashboard__cta">
-        Lebensmittel hinzufügen
-      </Button>
+      <div className="dashboard__aktionen">
+        <Button variante="primaer" onClick={onLebensmittelHinzufuegen}>
+          Lebensmittel hinzufügen
+        </Button>
+        {aktiveLebensmittel.length > 5 && (
+          <Button variante="sekundaer" onClick={onAlleAnzeigen}>
+            Alle {aktiveLebensmittel.length} anzeigen
+          </Button>
+        )}
+      </div>
     </section>
   )
 }

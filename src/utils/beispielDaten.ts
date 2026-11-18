@@ -2,19 +2,49 @@
 // automatisch angelegt werden. Datumswerte sind relativ zu "heute",
 // damit beim Testen sofort alle Status-Stufen sichtbar sind.
 
-import type { Lebensmittel } from '../types/food'
-
-// Hilfsfunktion: heutiges Datum + Tage, als String YYYY-MM-DD
-function datumInTagen(tage: number): string {
-  const datum = new Date()
-  datum.setDate(datum.getDate() + tage)
-  return datum.toISOString().split('T')[0]
-}
+import type { Einkaufsposten, Lebensmittel } from '../types/food'
+import { datumInTagen } from './datum'
 
 export function erstelleBeispielDaten(): Lebensmittel[] {
   const jetzt = new Date().toISOString()
+  // ISO-Zeitpunkt von vor n Tagen (für die archivierten Beispiele)
+  const vor = (tage: number) => new Date(Date.now() - tage * 86_400_000).toISOString()
 
-  return [
+  // Bereits abgeschlossene Beispiele, damit die Bilanz sofort etwas zeigt
+  const archiv = (
+    nr: number,
+    name: string,
+    menge: number,
+    einheit: string,
+    kategorie: string,
+    grund: 'verbraucht' | 'weggeworfen',
+    tageHer: number,
+  ): Lebensmittel => ({
+    id: `beispiel-archiv-${nr}`,
+    name,
+    menge,
+    einheit,
+    kategorie,
+    lagerort: 'Kühlschrank',
+    datumsart: 'MHD',
+    datum: datumInTagen(-tageHer),
+    notiz: '',
+    verbraucht: true,
+    verbrauchtAm: vor(tageHer),
+    archivGrund: grund,
+    erstelltAm: vor(tageHer + 7),
+  })
+
+  const archivierte: Lebensmittel[] = [
+    archiv(1, 'Toastbrot', 1, 'Stück', 'Backwaren', 'verbraucht', 2),
+    archiv(2, 'Bananen', 6, 'Stück', 'Obst', 'weggeworfen', 3),
+    archiv(3, 'Gouda', 200, 'g', 'Milchprodukte', 'verbraucht', 4),
+    archiv(4, 'Tomaten', 500, 'g', 'Gemüse', 'verbraucht', 6),
+    archiv(5, 'Salat', 1, 'Stück', 'Gemüse', 'weggeworfen', 8),
+    archiv(6, 'Butter', 250, 'g', 'Milchprodukte', 'verbraucht', 10),
+  ]
+
+  const aktive: Lebensmittel[] = [
     {
       id: 'beispiel-1',
       name: 'Vollmilch',
@@ -132,5 +162,15 @@ export function erstelleBeispielDaten(): Lebensmittel[] {
       verbraucht: false,
       erstelltAm: jetzt,
     },
+  ]
+
+  return [...aktive, ...archivierte]
+}
+
+// Beispiel-Einkaufsliste für den Reset-Knopf / den ersten Start.
+export function erstelleBeispielEinkaufsliste(): Einkaufsposten[] {
+  return [
+    { id: 'beispiel-ek-1', name: 'Haferflocken', menge: 500, einheit: 'g', kategorie: 'Trockenwaren', lagerort: 'Vorratsschrank' },
+    { id: 'beispiel-ek-2', name: 'Bio-Eier', menge: 10, einheit: 'Stück', kategorie: 'Eier', lagerort: 'Kühlschrank' },
   ]
 }

@@ -17,6 +17,48 @@
   --farbe-text-hell: #5a6b68;
   --farbe-rand: #dbe5e2;
   --radius: 10px;
+
+  /* Zusätzliche Farben, damit auch der Dark Mode alles umfärben kann */
+  --farbe-akzent: #0d6b5e;            /* Textfarbe für aktive Elemente */
+  --farbe-text-gefahr: #b42f2f;
+  --farbe-flaeche-gefahr: #fdecec;
+  --farbe-flaeche-gefahr-hover: #f9d9d9;
+  --farbe-text-erinnerung: #7a1f1f;
+  --farbe-flaeche-hinweis: #eef6f4;
+  --farbe-flaeche-hover: #eef3f1;
+  --farbe-flaeche-warnung: #fff4d6;
+  --farbe-text-warnung: #5c4300;
+  --farbe-flaeche-archiv: #fafcfb;
+  --farbe-eingabe: #ffffff;
+  --farbe-fokus: #7cc4b8;
+  --farbe-ueberlagerung: rgba(0, 0, 0, 0.45);
+  color-scheme: light;
+}
+
+/* Dark Mode: wird über das Attribut data-theme am <html> gesteuert */
+:root[data-theme='dunkel'] {
+  --farbe-primaer: #0f7f70;
+  --farbe-primaer-dunkel: #0b6a5d;
+  --farbe-hintergrund: #0e1514;
+  --farbe-karte: #172321;
+  --farbe-text: #e4eeec;
+  --farbe-text-hell: #9fb4b0;
+  --farbe-rand: #2b3d3a;
+  --farbe-verbraucht: #7d8a88;
+  --farbe-akzent: #4fcdb9;
+  --farbe-text-gefahr: #ff9b9b;
+  --farbe-flaeche-gefahr: #3a1d1f;
+  --farbe-flaeche-gefahr-hover: #4d2326;
+  --farbe-text-erinnerung: #ffc9c9;
+  --farbe-flaeche-hinweis: #14302b;
+  --farbe-flaeche-hover: #1f302d;
+  --farbe-flaeche-warnung: #3a3010;
+  --farbe-text-warnung: #ffe29a;
+  --farbe-flaeche-archiv: #131d1c;
+  --farbe-eingabe: #0f1a18;
+  --farbe-fokus: #4fcdb9;
+  --farbe-ueberlagerung: rgba(0, 0, 0, 0.65);
+  color-scheme: dark;
 }
 
 * {
@@ -25,6 +67,7 @@
 
 body {
   margin: 0;
+  -webkit-text-size-adjust: 100%;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--farbe-hintergrund);
   color: var(--farbe-text);
@@ -45,6 +88,7 @@ p {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .app__laedt {
@@ -53,10 +97,40 @@ p {
 }
 
 .app__kopf {
+  position: relative;
   background-color: var(--farbe-primaer);
   color: white;
   padding: 1rem 1.25rem;
   text-align: center;
+}
+
+.theme-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.5rem;
+  min-height: 32px;
+  padding: 0.25rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  background: transparent;
+  color: white;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.theme-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.theme-btn:focus-visible {
+  outline: 3px solid white;
+  outline-offset: 2px;
 }
 
 .app__logo {
@@ -73,7 +147,7 @@ p {
 .app__inhalt {
   flex: 1;
   padding: 1rem;
-  max-width: 720px;
+  max-width: 1000px;
   width: 100%;
   margin: 0 auto;
 }
@@ -85,28 +159,145 @@ p {
   border-top: 1px solid var(--farbe-rand);
   position: sticky;
   bottom: 0;
+  z-index: 10;
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .nav-btn {
   flex: 1;
-  padding: 0.85rem 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 56px;
+  padding: 0.5rem 0.25rem;
   border: none;
+  border-top: 3px solid transparent; /* immer vorhanden, damit der Text beim Wechsel nicht springt */
   background: none;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  line-height: 1.2;
   color: var(--farbe-text-hell);
   cursor: pointer;
 }
 
 .nav-btn--aktiv {
-  color: var(--farbe-primaer);
+  color: var(--farbe-akzent);
   font-weight: bold;
-  border-top: 3px solid var(--farbe-primaer);
+  border-top-color: var(--farbe-akzent);
 }
 
 /* ---------- Seiten allgemein ---------- */
 
+h1 {
+  font-size: 1.6rem;
+  line-height: 1.2;
+  margin: 0.25rem 0 1rem;
+}
+
+h2 {
+  font-size: 1.15rem;
+  margin: 0 0 0.75rem;
+}
+
 .seite {
   padding-bottom: 1rem;
+}
+
+.seite--schmal {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.seite__untertitel {
+  color: var(--farbe-text-hell);
+  margin-bottom: 1rem;
+}
+
+.leer {
+  color: var(--farbe-text-hell);
+  font-style: italic;
+  text-align: center;
+  padding: 1.5rem 1rem;
+}
+
+/* Hinweis- und Fehlerbanner */
+
+.erinnerung {
+  background-color: var(--farbe-flaeche-gefahr);
+  border: 1px solid var(--farbe-zeitnah);
+  border-radius: var(--radius);
+  padding: 0.7rem 0.9rem;
+  color: var(--farbe-text-erinnerung);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.speicherfehler {
+  margin: 0;
+  padding: 0.7rem 1rem;
+  background-color: var(--farbe-flaeche-warnung);
+  border-bottom: 1px solid var(--farbe-bald);
+  color: var(--farbe-text-warnung);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* Zähler im Dashboard */
+
+.zaehler {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.zaehler__feld {
+  background-color: var(--farbe-karte);
+  border: 1px solid var(--farbe-rand);
+  border-top-width: 4px;
+  border-radius: var(--radius);
+  padding: 0.75rem 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.15rem;
+}
+
+.zaehler__feld--zeitnah { border-top-color: var(--farbe-zeitnah); }
+.zaehler__feld--bald { border-top-color: var(--farbe-bald); }
+.zaehler__feld--frisch { border-top-color: var(--farbe-frisch); }
+
+.zaehler__zahl {
+  font-size: 1.75rem;
+  font-weight: bold;
+  line-height: 1.1;
+}
+
+.zaehler__text {
+  font-size: 0.8rem;
+  color: var(--farbe-text-hell);
+  line-height: 1.2;
+}
+
+.zaehlzeile {
+  font-size: 0.85rem;
+  color: var(--farbe-text-hell);
+  margin-bottom: 0.75rem;
+}
+
+.dashboard__aktionen {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.archiv__fuss {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.25rem;
 }
 
 /* ---------- Dashboard ---------- */
@@ -156,6 +347,7 @@ p {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  min-width: 0;
 }
 
 .dashboard__eintrag-datum {
@@ -163,19 +355,16 @@ p {
   color: var(--farbe-text-hell);
 }
 
-.dashboard__leer {
-  color: var(--farbe-text-hell);
-  font-style: italic;
-}
-
-.dashboard__cta {
-  width: 100%;
-}
-
 /* ---------- Buttons ---------- */
 
 .btn {
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.2;
+  font-family: inherit;
+  border: 1px solid transparent;
   border-radius: var(--radius);
   padding: 0.75rem 1rem;
   font-size: 0.95rem;
@@ -186,11 +375,26 @@ p {
 
 .btn--primaer {
   background-color: var(--farbe-primaer);
+  border-color: var(--farbe-primaer);
   color: white;
 }
 
 .btn--primaer:hover {
   background-color: var(--farbe-primaer-dunkel);
+}
+
+.btn--sekundaer:hover { background-color: var(--farbe-flaeche-hover); }
+.btn--gefahr:hover { background-color: var(--farbe-flaeche-gefahr-hover); }
+
+.btn:focus-visible,
+.nav-btn:focus-visible,
+.formular__feld input:focus-visible,
+.formular__feld select:focus-visible,
+.formular__feld textarea:focus-visible,
+.filterleiste__suche:focus-visible,
+.filterleiste__auswahl:focus-visible {
+  outline: 3px solid var(--farbe-fokus);
+  outline-offset: 1px;
 }
 
 .btn--sekundaer {
@@ -200,20 +404,25 @@ p {
 }
 
 .btn--gefahr {
-  background-color: #fdecec;
-  color: var(--farbe-zeitnah);
+  background-color: var(--farbe-flaeche-gefahr);
+  color: var(--farbe-text-gefahr);
   border: 1px solid var(--farbe-zeitnah);
 }
 
 /* ---------- Status Badges ---------- */
 
 .status {
-  display: inline-block;
-  padding: 0.3rem 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-shrink: 0;
+  max-width: 10.5rem;
+  padding: 0.3rem 0.7rem;
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: bold;
-  white-space: nowrap;
+  line-height: 1.2;
   color: white;
 }
 
@@ -234,15 +443,22 @@ p {
   background-color: var(--farbe-verbraucht);
 }
 
+.status--weggeworfen {
+  background-color: transparent;
+  color: var(--farbe-text-gefahr);
+  border: 1.5px solid var(--farbe-zeitnah);
+}
+
 /* ---------- Hinweisbox ---------- */
 
 .hinweis-box {
-  background-color: #eef6f4;
-  border-left: 4px solid var(--farbe-primaer);
+  background-color: var(--farbe-flaeche-hinweis);
+  border-left: 4px solid var(--farbe-akzent);
   padding: 0.6rem 0.75rem;
   font-size: 0.8rem;
   border-radius: 6px;
   color: var(--farbe-text);
+  margin: 0 0 0.5rem 0;
 }
 
 /* ---------- Karten ---------- */
@@ -261,19 +477,22 @@ p {
 }
 
 .karte--archiv {
-  opacity: 0.85;
+  background-color: var(--farbe-flaeche-archiv);
 }
 
 .karte__kopf {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
 }
 
 .karte__titel {
   font-size: 1.05rem;
+  margin: 0;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .karte__details {
@@ -287,6 +506,11 @@ p {
   padding: 0.15rem 0;
   border-bottom: 1px dashed var(--farbe-rand);
   font-size: 0.9rem;
+  align-items: baseline;
+}
+
+.karte__zeile:last-child {
+  border-bottom: none;
 }
 
 .karte__zeile dt {
@@ -297,6 +521,7 @@ p {
 .karte__zeile dd {
   margin: 0;
   text-align: right;
+  overflow-wrap: anywhere;
 }
 
 .karte__tage {
@@ -305,24 +530,32 @@ p {
 }
 
 .karte__aktionen {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.5rem;
   margin-top: 0.75rem;
-  flex-wrap: wrap;
 }
 
 .karte__aktionen .btn {
-  flex: 1;
-  min-width: 90px;
-}
+  width: 100%;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;}
 
 /* ---------- Filterleiste (Übersicht) ---------- */
 
 .filterleiste {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
   margin-bottom: 1rem;
+}
+
+.filterleiste__suche {
+  grid-column: 1 / -1;
+}
+
+.filterleiste__auswahl--breit {
+  grid-column: 1 / -1;
 }
 
 .filterleiste__suche,
@@ -331,7 +564,10 @@ p {
   border: 1px solid var(--farbe-rand);
   border-radius: var(--radius);
   font-size: 0.95rem;
-  background-color: var(--farbe-karte);
+  background-color: var(--farbe-eingabe);
+  color: var(--farbe-text);
+  font-family: inherit;
+  min-width: 0;
 }
 
 /* ---------- Formular ---------- */
@@ -344,12 +580,16 @@ p {
   border: 1px solid var(--farbe-rand);
   border-radius: var(--radius);
   padding: 1rem;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .formular__feld {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  min-width: 0;
 }
 
 .formular__feld label {
@@ -366,6 +606,10 @@ p {
   border-radius: var(--radius);
   font-size: 1rem;
   font-family: inherit;
+  width: 100%;
+  min-height: 44px;
+  background-color: var(--farbe-eingabe);
+  color: var(--farbe-text);
 }
 
 .formular__feld textarea {
@@ -378,12 +622,18 @@ p {
   gap: 0.75rem;
 }
 
+@media (max-width: 340px) {
+  .formular__reihe {
+    flex-direction: column;
+  }
+}
+
 .formular__reihe .formular__feld {
   flex: 1;
 }
 
 .formular__fehler {
-  color: var(--farbe-zeitnah);
+  color: var(--farbe-text-gefahr);
   font-size: 0.8rem;
   margin: 0;
 }
@@ -403,7 +653,7 @@ p {
 .dialog-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.45);
+  background-color: var(--farbe-ueberlagerung);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -417,6 +667,7 @@ p {
   padding: 1.25rem;
   max-width: 380px;
   width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
 .dialog__aktionen {
@@ -432,6 +683,11 @@ p {
 /* ---------- Größere Bildschirme ---------- */
 
 @media (min-width: 640px) {
+  .status {
+    max-width: none;
+    white-space: nowrap;
+  }
+
   .app__inhalt {
     padding: 1.5rem;
   }
@@ -443,15 +699,12 @@ p {
   }
 
   .filterleiste {
-    flex-direction: row;
+    grid-template-columns: 2fr 1fr 1fr 1.3fr;
   }
 
-  .filterleiste__suche {
-    flex: 2;
-  }
-
-  .filterleiste__auswahl {
-    flex: 1;
+  .filterleiste__suche,
+  .filterleiste__auswahl--breit {
+    grid-column: auto;
   }
 }
 
@@ -459,4 +712,312 @@ p {
   .karten-liste {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+
+/* =========================================================
+   Neue Bausteine: Chips, Bilanz, Auswahl, Einkauf, Toast
+   ========================================================= */
+
+.app__fuss {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-bottom: 1rem;
+}
+
+.linkbutton {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  min-height: 44px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--farbe-text-hell);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.linkbutton:hover {
+  color: var(--farbe-text);
+}
+
+.linkbutton:focus-visible {
+  outline: 3px solid var(--farbe-fokus);
+  outline-offset: 1px;
+}
+
+.btn--klein {
+  min-height: 36px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Chips (Schnellauswahl, Rest-Dialog) */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--farbe-rand);
+  border-radius: 999px;
+  background-color: var(--farbe-eingabe);
+  color: var(--farbe-text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: var(--farbe-akzent);
+  color: var(--farbe-akzent);
+}
+
+.chip:focus-visible {
+  outline: 3px solid var(--farbe-fokus);
+  outline-offset: 1px;
+}
+
+.formular__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--farbe-text-hell);
+}
+
+.formular__loeschen {
+  display: flex;
+  justify-content: center;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--farbe-rand);
+}
+
+/* Bilanz */
+
+.bilanz {
+  background-color: var(--farbe-karte);
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.bilanz__kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.bilanz__titel {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.bilanz__quote {
+  font-weight: bold;
+  color: var(--farbe-akzent);
+}
+
+.bilanz__balken {
+  display: flex;
+  height: 12px;
+  border-radius: 999px;
+  overflow: hidden;
+  background-color: var(--farbe-rand);
+}
+
+.bilanz__teil--verbraucht {
+  background-color: var(--farbe-frisch);
+}
+
+.bilanz__teil--weggeworfen {
+  background-color: var(--farbe-zeitnah);
+}
+
+.bilanz__text {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+  color: var(--farbe-text-hell);
+}
+
+/* Liste / Auswahl */
+
+.listenkopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.listenkopf .zaehlzeile {
+  margin: 0;
+}
+
+.karte--gewaehlt {
+  border-color: var(--farbe-akzent);
+  box-shadow: 0 0 0 2px var(--farbe-akzent);
+}
+
+.karte__checkbox {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  accent-color: var(--farbe-primaer);
+  cursor: pointer;
+}
+
+.karte__kopf .karte__titel {
+  flex: 1;
+}
+
+.auswahlleiste {
+  position: sticky;
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  z-index: 5;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: var(--farbe-karte);
+  border: 1px solid var(--farbe-akzent);
+  border-radius: var(--radius);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.auswahlleiste__kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.auswahlleiste__aktionen {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.auswahlleiste__aktionen .btn {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+/* Einkaufsliste */
+
+.einkauf-formular {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.einkauf-formular .filterleiste__suche {
+  flex: 1;
+  grid-column: auto;
+}
+
+.einkauf-fehler {
+  margin-bottom: 0.75rem;
+}
+
+.einkauf-liste {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.einkauf-eintrag {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  background-color: var(--farbe-karte);
+  border: 1px solid var(--farbe-rand);
+  border-radius: var(--radius);
+  padding: 0.7rem 0.9rem;
+}
+
+.einkauf-eintrag__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.einkauf-eintrag__aktionen {
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* Erinnerungs-Dialog */
+
+.erinnerung-liste {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.erinnerung-liste li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px dashed var(--farbe-rand);
+  font-size: 0.9rem;
+}
+
+.erinnerung-liste li span {
+  color: var(--farbe-text-hell);
+  text-align: right;
+}
+
+/* Kurze Rückmeldung unten */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 50;
+  max-width: calc(100% - 2rem);
+  margin: 0;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius);
+  background-color: var(--farbe-text);
+  color: var(--farbe-hintergrund);
+  font-size: 0.9rem;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Archiv-Karten: 3 Buttons -> "Löschen" nimmt die ganze untere Zeile */
+.karte--archiv .karte__aktionen .btn--gefahr {
+  grid-column: 1 / -1;
 }

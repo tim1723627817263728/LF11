@@ -1,8 +1,11 @@
 // Zeigt ein einzelnes Lebensmittel als Karte an, inklusive
 // Status, Hinweistext und den Aktions-Buttons.
+// Im Auswahlmodus (Mehrfachauswahl) ersetzt eine Checkbox die Buttons.
 
 import type { Lebensmittel } from '../types/food'
-import { berechneStatus, hinweisFuerDatumsart, tageBisDatum } from '../utils/status'
+import { berechneStatus, hinweisFuerDatumsart, restzeitText, tageBisDatum } from '../utils/status'
+import { formatiereDatum } from '../utils/datum'
+import { formatiereMenge } from '../utils/format'
 import { StatusBadge } from './StatusBadge'
 import { HinweisBox } from './HinweisBox'
 import { Button } from './Button'
@@ -11,28 +14,40 @@ interface Props {
   lebensmittel: Lebensmittel
   onBearbeiten: (lebensmittel: Lebensmittel) => void
   onVerbraucht: (lebensmittel: Lebensmittel) => void
-  onLoeschen: (lebensmittel: Lebensmittel) => void
-}
-
-const lagerortText: Record<Lebensmittel['lagerort'], string> = {
-  Kühlschrank: 'Kühlschrank',
-  Gefrierfach: 'Gefrierfach',
-  Vorratsschrank: 'Vorratsschrank',
+  onWeggeworfen: (lebensmittel: Lebensmittel) => void
+  onRestAnpassen: (lebensmittel: Lebensmittel) => void
+  // Mehrfachauswahl
+  auswahlModus?: boolean
+  ausgewaehlt?: boolean
+  onAuswahlWechseln?: (lebensmittel: Lebensmittel) => void
 }
 
 export function LebensmittelKarte({
   lebensmittel,
   onBearbeiten,
   onVerbraucht,
-  onLoeschen,
+  onWeggeworfen,
+  onRestAnpassen,
+  auswahlModus = false,
+  ausgewaehlt = false,
+  onAuswahlWechseln,
 }: Props) {
   const status = berechneStatus(lebensmittel)
   const tage = tageBisDatum(lebensmittel.datum)
   const hinweis = hinweisFuerDatumsart(lebensmittel.datumsart)
 
   return (
-    <article className="karte">
+    <article className={`karte${ausgewaehlt ? ' karte--gewaehlt' : ''}`}>
       <div className="karte__kopf">
+        {auswahlModus && (
+          <input
+            type="checkbox"
+            className="karte__checkbox"
+            checked={ausgewaehlt}
+            onChange={() => onAuswahlWechseln?.(lebensmittel)}
+            aria-label={`${lebensmittel.name} auswählen`}
+          />
+        )}
         <h3 className="karte__titel">{lebensmittel.name}</h3>
         <StatusBadge status={status} />
       </div>
@@ -41,27 +56,27 @@ export function LebensmittelKarte({
         <div className="karte__zeile">
           <dt>Menge</dt>
           <dd>
-            {lebensmittel.menge} {lebensmittel.einheit}
+            {formatiereMenge(lebensmittel.menge)} {lebensmittel.einheit}
           </dd>
         </div>
-        <div className="karte__zeile">
-          <dt>Kategorie</dt>
-          <dd>{lebensmittel.kategorie}</dd>
-        </div>
+        {lebensmittel.kategorie && (
+          <div className="karte__zeile">
+            <dt>Kategorie</dt>
+            <dd>{lebensmittel.kategorie}</dd>
+          </div>
+        )}
         <div className="karte__zeile">
           <dt>Lagerort</dt>
-          <dd>{lagerortText[lebensmittel.lagerort]}</dd>
+          <dd>{lebensmittel.lagerort}</dd>
         </div>
         <div className="karte__zeile">
           <dt>{lebensmittel.datumsart}</dt>
           <dd>
-            {lebensmittel.datum}
-            {!lebensmittel.verbraucht && (
-              <span className="karte__tage">
-                {' '}
-                ({tage >= 0 ? `noch ${tage} Tag(e)` : `${Math.abs(tage)} Tag(e) überfällig`})
-              </span>
-            )}
+            {formatiereDatum(lebensmittel.datum)}
+            <span className="karte__tage">
+              <br />
+              {restzeitText(tage)}
+            </span>
           </dd>
         </div>
         {lebensmittel.notiz && (
@@ -72,18 +87,21 @@ export function LebensmittelKarte({
         )}
       </dl>
 
-      {!lebensmittel.verbraucht && <HinweisBox text={hinweis} />}
+      <HinweisBox text={hinweis} />
 
-      {!lebensmittel.verbraucht && (
+      {!auswahlModus && (
         <div className="karte__aktionen">
           <Button variante="primaer" onClick={() => onVerbraucht(lebensmittel)}>
             Verbraucht
           </Button>
+          <Button variante="sekundaer" onClick={() => onWeggeworfen(lebensmittel)}>
+            Weggeworfen
+          </Button>
+          <Button variante="sekundaer" onClick={() => onRestAnpassen(lebensmittel)}>
+            Rest anpassen
+          </Button>
           <Button variante="sekundaer" onClick={() => onBearbeiten(lebensmittel)}>
             Bearbeiten
-          </Button>
-          <Button variante="gefahr" onClick={() => onLoeschen(lebensmittel)}>
-            Löschen
           </Button>
         </div>
       )}
