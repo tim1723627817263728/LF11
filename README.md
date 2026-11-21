@@ -12,11 +12,14 @@ FreshTrack ist ein einfacher **MVP-Prototyp** (kein fertiges Produkt), der priva
 ## Funktionen
 
 - **Heute:** Zähler nach Status, Hinweis auf zeitnah ablaufende Lebensmittel und die Bilanz
-- **Lebensmittel:** Suche, Filter (Lagerort/Status), Sortierung, Mehrfachauswahl
+- **Lebensmittel:** Suche, Filter (Lagerort/Status/Kategorie), Sortierung, Mehrfachauswahl
 - **Aktionen pro Lebensmittel:** Verbraucht, Weggeworfen, Rest anpassen (z. B. "zur Hälfte verbraucht"), Bearbeiten, Löschen
-- **Hinzufügen:** Schnellauswahl für häufige Produkte (mit typischer Haltbarkeit), Dezimalkomma bei Mengen
+- **Hinzufügen:** Schnellauswahl für häufige Produkte, Dezimalkomma bei Mengen, feste Kategorien (Pflichtfeld, mit Vorschlag aus dem Namen) und "bereits geöffnet" (verkürzt die Haltbarkeit je Kategorie)
 - **Einkaufsliste:** Artikel notieren, per "In Vorrat" nach dem Einkauf direkt erfassen
-- **Archiv:** Wiederherstellen, "Nochmal kaufen" (landet auf der Einkaufsliste), Bilanz verbraucht/weggeworfen
+- **Archiv:** Wiederherstellen, "Nochmal kaufen" (landet auf der Einkaufsliste), Bilanz verbraucht/weggeworfen inklusive der am häufigsten weggeworfenen Kategorien
+- **Rückgängig:** Verbraucht, Weggeworfen, Löschen, Restmenge und Archiv leeren lassen sich über den Hinweis am unteren Rand zurücknehmen
+- **Schutz vor Datenverlust:** Wer mit ungespeicherten Eingaben die Seite wechselt, wird gewarnt
+- **Entsorgungs-Empfehlung:** Je nach Kategorie (z. B. Milchprodukte 3 Tage, Fleisch 1 Tag, Trockenwaren 180 Tage) gibt es feste Grenzen. Ist das MHD länger überschritten, steht "Entsorgung empfohlen" statt "Zeitnah verwenden". Beim Verbrauchsdatum gilt das sofort nach Ablauf. Die Werte stehen in `src/utils/kategorien.ts` (Richtwerte je Kategorie) und `src/utils/haltbarkeit.ts` (Regeln) und sind dort anpassbar.
 - **Erinnerung:** Beim Start (einmal pro Browser-Sitzung) ein Hinweis auf dringende Lebensmittel
 - **Dark Mode:** Umschalter oben rechts, die Wahl wird gespeichert
 - **Beispieldaten zurücksetzen:** Knopf unten, praktisch für Vorführungen

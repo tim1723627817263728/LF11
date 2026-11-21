@@ -8,6 +8,7 @@ interface Props {
   titel: string
   text: string
   bestaetigenText?: string
+  abbrechenText?: string
   gefahr?: boolean
   onBestaetigen: () => void
   onAbbrechen: () => void
@@ -17,6 +18,7 @@ export function BestaetigungsDialog({
   titel,
   text,
   bestaetigenText = 'Bestätigen',
+  abbrechenText = 'Abbrechen',
   gefahr = false,
   onBestaetigen,
   onAbbrechen,
@@ -45,7 +47,7 @@ export function BestaetigungsDialog({
         <p>{text}</p>
         <div className="dialog__aktionen">
           <Button variante="sekundaer" onClick={onAbbrechen} autoFocus>
-            Abbrechen
+            {abbrechenText}
           </Button>
           <Button variante={gefahr ? 'gefahr' : 'primaer'} onClick={onBestaetigen}>
             {bestaetigenText}

@@ -12,6 +12,7 @@ export type Status =
   | 'Frisch'
   | 'Bald prüfen'
   | 'Zeitnah verwenden oder prüfen'
+  | 'Entsorgung empfohlen'
   | 'Verbraucht'
   | 'Weggeworfen'
 
@@ -33,6 +34,7 @@ export interface Lebensmittel {
   erstelltAm: string
   verbrauchtAm?: string // ISO-Zeitpunkt, wann ins Archiv verschoben
   archivGrund?: ArchivGrund // fehlt bei alten Einträgen -> gilt als verbraucht
+  geoeffnetAm?: string // YYYY-MM-DD, falls geöffnet/angeschnitten (kürzere Haltbarkeit)
 }
 
 // Werte, die im Formular eingegeben werden (id/verbraucht/erstelltAm kommen automatisch dazu)

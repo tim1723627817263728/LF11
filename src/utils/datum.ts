@@ -48,3 +48,11 @@ export function formatiereDatum(datum: string): string {
   const treffer = DATUM_MUSTER.exec(datum)
   return treffer ? `${treffer[3]}.${treffer[2]}.${treffer[1]}` : datum
 }
+
+// Datum + n Tage (n darf negativ sein), wieder als YYYY-MM-DD in lokaler Zeit.
+export function addiereTage(datum: string, tage: number): string {
+  const treffer = DATUM_MUSTER.exec(datum)
+  if (!treffer) return datum
+  const d = new Date(Number(treffer[1]), Number(treffer[2]) - 1, Number(treffer[3]) + tage)
+  return alsDatumString(d)
+}

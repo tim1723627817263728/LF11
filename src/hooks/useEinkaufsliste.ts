@@ -37,5 +37,10 @@ export function useEinkaufsliste() {
     setPosten(erstelleBeispielEinkaufsliste())
   }
 
-  return { posten, hinzufuegen, entfernen, leeren, beispieleLaden }
+  // Ersetzt die komplette Liste (wird für "Rückgängig" genutzt).
+  function setzen(neu: Einkaufsposten[]) {
+    setPosten(neu)
+  }
+
+  return { posten, setzen, hinzufuegen, entfernen, leeren, beispieleLaden }
 }

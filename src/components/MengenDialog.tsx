@@ -39,6 +39,7 @@ export function MengenDialog({ lebensmittel, onSpeichern, onAbbrechen }: Props) 
     <div className="dialog-overlay" onClick={onAbbrechen}>
       <form
         className="dialog"
+        noValidate
         role="dialog"
         aria-modal="true"
         aria-labelledby="mengen-titel"

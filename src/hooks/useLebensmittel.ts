@@ -91,8 +91,14 @@ export function useLebensmittel() {
     setListe(erstelleBeispielDaten())
   }
 
+  // Ersetzt die komplette Liste (wird für "Rückgängig" genutzt).
+  function listeSetzen(neueListe: Lebensmittel[]) {
+    setListe(neueListe)
+  }
+
   return {
     liste,
+    listeSetzen,
     istGeladen,
     speicherFehler,
     lebensmittelHinzufuegen,

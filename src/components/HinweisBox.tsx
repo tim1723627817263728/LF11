@@ -3,11 +3,12 @@
 
 interface Props {
   text: string
+  warnung?: boolean // hebt den Hinweis hervor (z. B. Entsorgung empfohlen)
 }
 
-export function HinweisBox({ text }: Props) {
+export function HinweisBox({ text, warnung = false }: Props) {
   return (
-    <p className="hinweis-box">
+    <p className={warnung ? 'hinweis-box hinweis-box--warnung' : 'hinweis-box'}>
       <strong>Hinweis: </strong>
       {text}
     </p>

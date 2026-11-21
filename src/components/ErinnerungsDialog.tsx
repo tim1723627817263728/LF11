@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react'
 import type { Lebensmittel } from '../types/food'
-import { restzeitText, tageBisDatum } from '../utils/status'
+import { berechneStatus, restzeitText, tageBisFrist } from '../utils/status'
 import { Button } from './Button'
 
 interface Props {
@@ -34,12 +34,17 @@ export function ErinnerungsDialog({ lebensmittel, onSchliessen, onAnzeigen }: Pr
         onClick={(e) => e.stopPropagation()}
       >
         <h3 id="erinnerung-titel">Heute im Blick behalten</h3>
-        <p>Diese Lebensmittel sollten zeitnah verwendet oder geprüft werden:</p>
+        <p>Diese Lebensmittel sollten zeitnah verwendet, geprüft oder entsorgt werden:</p>
         <ul className="erinnerung-liste">
           {sichtbar.map((lm) => (
             <li key={lm.id}>
-              <strong>{lm.name}</strong>
-              <span>{restzeitText(tageBisDatum(lm.datum))}</span>
+              <strong>
+                {lm.name}
+                {berechneStatus(lm) === 'Entsorgung empfohlen' && (
+                  <span className="erinnerung-liste__tag">Entsorgen</span>
+                )}
+              </strong>
+              <span>{restzeitText(tageBisFrist(lm))}</span>
             </li>
           ))}
         </ul>

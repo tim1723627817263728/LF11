@@ -482,10 +482,18 @@ h2 {
 
 .karte__kopf {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column; /* Name und Status-Label stehen in getrennten Zeilen */
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.karte__titelzeile {
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: 0.6rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .karte__titel {
@@ -699,7 +707,7 @@ h2 {
   }
 
   .filterleiste {
-    grid-template-columns: 2fr 1fr 1fr 1.3fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
   }
 
   .filterleiste__suche,
@@ -1006,18 +1014,233 @@ h2 {
   bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
   z-index: 50;
+  width: max-content;
   max-width: calc(100% - 2rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
   margin: 0;
-  padding: 0.65rem 1rem;
+  padding: 0.6rem 0.9rem;
   border-radius: var(--radius);
   background-color: var(--farbe-text);
   color: var(--farbe-hintergrund);
   font-size: 0.9rem;
-  text-align: center;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 /* Archiv-Karten: 3 Buttons -> "Löschen" nimmt die ganze untere Zeile */
 .karte--archiv .karte__aktionen .btn--gefahr {
   grid-column: 1 / -1;
+}
+
+/* ---------- Status "Entsorgung empfohlen" ---------- */
+
+:root {
+  --farbe-entsorgen: #8f1d1d;
+}
+
+:root[data-theme='dunkel'] {
+  --farbe-entsorgen: #b13a3a;
+}
+
+.status--entsorgen {
+  background-color: var(--farbe-entsorgen);
+  color: white;
+}
+
+.karte--entsorgen {
+  border-color: var(--farbe-entsorgen);
+  border-left-width: 4px;
+}
+
+.hinweis-box--warnung {
+  background-color: var(--farbe-flaeche-gefahr);
+  border-left-color: var(--farbe-entsorgen);
+  color: var(--farbe-text-erinnerung);
+}
+
+.erinnerung--entsorgen {
+  border-color: var(--farbe-entsorgen);
+  border-left-width: 4px;
+  font-weight: 600;
+}
+
+.zaehler__feld--entsorgen { border-top-color: var(--farbe-entsorgen); }
+
+.zaehler {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 560px) {
+  .zaehler {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.erinnerung-liste__tag {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background-color: var(--farbe-entsorgen);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+
+/* ---------- Name und Status-Label in getrennten Zeilen ---------- */
+
+/* Das Label hat in der eigenen Zeile genug Platz und bricht nicht mehr um. */
+.karte__kopf .status,
+.dashboard__eintrag .status {
+  max-width: 100%;
+}
+
+@media (max-width: 559px) {
+  .dashboard__eintrag {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .dashboard__eintrag-info {
+    width: 100%;
+  }
+}
+
+
+/* ---------- Toast mit Rückgängig ---------- */
+
+:root {
+  --farbe-toast-aktion: #8be0d0;
+}
+
+:root[data-theme='dunkel'] {
+  --farbe-toast-aktion: #0b6a5d;
+}
+
+.toast__text {
+  text-align: left;
+  line-height: 1.3;
+}
+
+.toast__aktion {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0.25rem 0.6rem;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--farbe-toast-aktion);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.toast__aktion:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.toast__aktion:focus-visible {
+  outline: 3px solid var(--farbe-toast-aktion);
+  outline-offset: 1px;
+}
+
+/* ---------- Formular: Hinweise und "geöffnet" ---------- */
+
+.formular__hinweis {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--farbe-text-hell);
+}
+
+.formular__oeffnen {
+  padding: 0.75rem;
+  border: 1px dashed var(--farbe-rand);
+  border-radius: var(--radius);
+}
+
+.formular__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 32px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.formular__checkbox input {
+  width: 22px;
+  height: 22px;
+  min-height: 0;
+  flex-shrink: 0;
+  accent-color: var(--farbe-primaer);
+}
+
+/* ---------- Bilanz nach Kategorie ---------- */
+
+.bilanz__text--kategorie {
+  margin-top: 0.3rem;
+}
+
+.bilanz__kategorien {
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--farbe-rand);
+}
+
+.bilanz__unterueberschrift {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: var(--farbe-text-hell);
+}
+
+.bilanz__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bilanz__zeile {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, 9rem) 1fr 2.5rem;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.bilanz__name {
+  overflow-wrap: anywhere;
+}
+
+.bilanz__leiste {
+  display: block;
+  height: 10px;
+  border-radius: 999px;
+  background-color: var(--farbe-rand);
+  overflow: hidden;
+}
+
+.bilanz__fuellung {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--farbe-zeitnah);
+}
+
+.bilanz__anzahl {
+  text-align: right;
+  font-weight: bold;
 }

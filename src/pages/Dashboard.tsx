@@ -4,11 +4,11 @@
 import type { Lebensmittel, Status } from '../types/food'
 import {
   berechneStatus,
+  fristText,
   restzeitText,
-  tageBisDatum,
+  tageBisFrist,
   vergleicheDringlichkeit,
 } from '../utils/status'
-import { formatiereDatum } from '../utils/datum'
 import { StatusBadge } from '../components/StatusBadge'
 import { Button } from '../components/Button'
 import { Bilanz } from '../components/Bilanz'
@@ -21,6 +21,7 @@ interface Props {
 }
 
 const ZAEHLER: { status: Status; klasse: string; label: string }[] = [
+  { status: 'Entsorgung empfohlen', klasse: 'entsorgen', label: 'Entsorgen' },
   { status: 'Zeitnah verwenden oder prüfen', klasse: 'zeitnah', label: 'Zeitnah prüfen' },
   { status: 'Bald prüfen', klasse: 'bald', label: 'Bald prüfen' },
   { status: 'Frisch', klasse: 'frisch', label: 'Frisch' },
@@ -36,10 +37,21 @@ export function Dashboard({
   const anzahlZeitnah = aktiveLebensmittel.filter(
     (lm) => berechneStatus(lm) === 'Zeitnah verwenden oder prüfen',
   ).length
+  const anzahlEntsorgen = aktiveLebensmittel.filter(
+    (lm) => berechneStatus(lm) === 'Entsorgung empfohlen',
+  ).length
 
   return (
     <section className="seite seite--schmal">
       <h1>Dein Überblick für heute</h1>
+
+      {anzahlEntsorgen > 0 && (
+        <p className="erinnerung erinnerung--entsorgen" role="status">
+          {anzahlEntsorgen === 1
+            ? '1 Lebensmittel ist deutlich abgelaufen: Entsorgung empfohlen.'
+            : `${anzahlEntsorgen} Lebensmittel sind deutlich abgelaufen: Entsorgung empfohlen.`}
+        </p>
+      )}
 
       {anzahlZeitnah > 0 && (
         <p className="erinnerung" role="status">
@@ -62,7 +74,7 @@ export function Dashboard({
 
       <Bilanz archiv={archivierteLebensmittel} />
 
-      <h2>Zuerst verwenden oder prüfen</h2>
+      <h2>Zuerst verwenden, prüfen oder entsorgen</h2>
 
       {dringendeListe.length === 0 ? (
         <p className="leer">Aktuell keine aktiven Lebensmittel vorhanden.</p>
@@ -73,8 +85,7 @@ export function Dashboard({
               <div className="dashboard__eintrag-info">
                 <strong>{lebensmittel.name}</strong>
                 <span className="dashboard__eintrag-datum">
-                  {lebensmittel.datumsart}: {formatiereDatum(lebensmittel.datum)} ·{' '}
-                  {restzeitText(tageBisDatum(lebensmittel.datum))}
+                  {fristText(lebensmittel)} · {restzeitText(tageBisFrist(lebensmittel))}
                 </span>
               </div>
               <StatusBadge status={berechneStatus(lebensmittel)} />

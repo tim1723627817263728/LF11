@@ -3,6 +3,7 @@
 
 import type { Einkaufsposten, Lebensmittel } from '../types/food'
 import { istGueltigesDatum } from './datum'
+import { erkenneKategorie, istKategorie, normalisiereKategorie } from './kategorien'
 
 const STORAGE_KEY = 'freshtrack_lebensmittel'
 // Merkt sich, dass die Beispieldaten schon einmal angelegt wurden.
@@ -44,6 +45,12 @@ export function ladeLebensmittel(): Lebensmittel[] {
     if (!Array.isArray(daten)) return []
     return daten.filter(istGueltigerEintrag).map((e) => ({
       ...e,
+      // Alte Einträge hatten eine freie Kategorie -> auf die feste Auswahl abbilden
+      kategorie: normalisiereKategorie(e.kategorie, e.name),
+      geoeffnetAm:
+        typeof e.geoeffnetAm === 'string' && istGueltigesDatum(e.geoeffnetAm)
+          ? e.geoeffnetAm
+          : undefined,
       archivGrund: e.archivGrund === 'weggeworfen' ? ('weggeworfen' as const) : e.archivGrund === 'verbraucht' ? ('verbraucht' as const) : undefined,
       erstelltAm: typeof e.erstelltAm === 'string' ? e.erstelltAm : new Date().toISOString(),
     }))
@@ -105,7 +112,14 @@ export function ladeEinkaufsliste(): Einkaufsposten[] | null {
     const rohdaten = localStorage.getItem(EINKAUF_KEY)
     if (rohdaten === null) return null
     const daten: unknown = JSON.parse(rohdaten)
-    return Array.isArray(daten) ? daten.filter(istGueltigerPosten) : []
+    if (!Array.isArray(daten)) return []
+    return daten.filter(istGueltigerPosten).map((p) => ({
+      ...p,
+      // Kategorie auf die feste Auswahl abbilden; unbekannt bleibt leer (wird im Formular gewählt)
+      kategorie: istKategorie(p.kategorie)
+        ? p.kategorie
+        : (erkenneKategorie(p.kategorie) ?? erkenneKategorie(p.name) ?? ''),
+    }))
   } catch (fehler) {
     console.error('Fehler beim Laden der Einkaufsliste:', fehler)
     return []

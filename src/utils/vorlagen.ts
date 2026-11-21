@@ -4,12 +4,13 @@
 
 import type { LebensmittelFormDaten } from '../types/food'
 import { datumInTagen } from './datum'
+import type { Kategorie } from './kategorien'
 
 interface Vorlage {
   name: string
   menge: number
   einheit: string
-  kategorie: string
+  kategorie: Kategorie
   lagerort: LebensmittelFormDaten['lagerort']
   datumsart: LebensmittelFormDaten['datumsart']
   haltbarkeitTage: number
@@ -20,8 +21,8 @@ export const VORLAGEN: Vorlage[] = [
   { name: 'Eier', menge: 10, einheit: 'Stück', kategorie: 'Eier', lagerort: 'Kühlschrank', datumsart: 'MHD', haltbarkeitTage: 21 },
   { name: 'Brot', menge: 1, einheit: 'Stück', kategorie: 'Backwaren', lagerort: 'Vorratsschrank', datumsart: 'MHD', haltbarkeitTage: 4 },
   { name: 'Joghurt', menge: 4, einheit: 'Stück', kategorie: 'Milchprodukte', lagerort: 'Kühlschrank', datumsart: 'MHD', haltbarkeitTage: 10 },
-  { name: 'Hackfleisch', menge: 500, einheit: 'g', kategorie: 'Fleisch', lagerort: 'Kühlschrank', datumsart: 'Verbrauchsdatum', haltbarkeitTage: 1 },
-  { name: 'Hähnchenbrust', menge: 500, einheit: 'g', kategorie: 'Fleisch', lagerort: 'Kühlschrank', datumsart: 'Verbrauchsdatum', haltbarkeitTage: 2 },
+  { name: 'Hackfleisch', menge: 500, einheit: 'g', kategorie: 'Fleisch & Wurst', lagerort: 'Kühlschrank', datumsart: 'Verbrauchsdatum', haltbarkeitTage: 1 },
+  { name: 'Hähnchenbrust', menge: 500, einheit: 'g', kategorie: 'Fleisch & Wurst', lagerort: 'Kühlschrank', datumsart: 'Verbrauchsdatum', haltbarkeitTage: 2 },
   { name: 'Butter', menge: 250, einheit: 'g', kategorie: 'Milchprodukte', lagerort: 'Kühlschrank', datumsart: 'MHD', haltbarkeitTage: 30 },
   { name: 'Äpfel', menge: 1, einheit: 'kg', kategorie: 'Obst', lagerort: 'Kühlschrank', datumsart: 'MHD', haltbarkeitTage: 14 },
   { name: 'Salat', menge: 1, einheit: 'Stück', kategorie: 'Gemüse', lagerort: 'Kühlschrank', datumsart: 'MHD', haltbarkeitTage: 4 },

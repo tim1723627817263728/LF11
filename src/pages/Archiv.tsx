@@ -47,7 +47,7 @@ export function Archiv({
       <h1>Archiv</h1>
       <p className="seite__untertitel">Verbrauchte und weggeworfene Lebensmittel</p>
 
-      <Bilanz archiv={archivierteLebensmittel} />
+      <Bilanz archiv={archivierteLebensmittel} detail />
 
       {sortiert.length === 0 ? (
         <p className="leer">Noch keine abgeschlossenen Lebensmittel.</p>

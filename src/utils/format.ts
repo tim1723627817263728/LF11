@@ -10,3 +10,8 @@ export function parseMenge(text: string): number {
   const bereinigt = text.trim().replace(',', '.')
   return bereinigt === '' ? Number.NaN : Number(bereinigt)
 }
+
+// Für Sätze wie "innerhalb von 3 Tagen" / "innerhalb von 1 Tag".
+export function tageDativ(n: number): string {
+  return n === 1 ? '1 Tag' : `${n} Tagen`
+}

@@ -1,7 +1,8 @@
 // Seite mit allen aktiven Lebensmitteln: Suche, Filter, Sortierung,
 // Mehrfachauswahl und die Karten mit den Aktions-Buttons.
-// Kümmert sich auch um die Bestätigungs-Dialoge und schaltet bei
-// "Bearbeiten" auf das Formular um.
+// "Verbraucht" und "Weggeworfen" gehen ohne Rückfrage (die App zeigt danach
+// "Rückgängig"). Nur das endgültige Löschen fragt vorher nach.
+// Bei "Bearbeiten" wird auf das Formular umgeschaltet.
 
 import { useMemo, useState } from 'react'
 import type {
@@ -12,6 +13,9 @@ import type {
   Status,
 } from '../types/food'
 import { berechneStatus, vergleicheDringlichkeit } from '../utils/status'
+import { kategorieVon } from '../utils/haltbarkeit'
+import { KATEGORIEN } from '../utils/kategorien'
+import type { Kategorie } from '../utils/kategorien'
 import { LebensmittelKarte } from '../components/LebensmittelKarte'
 import { BestaetigungsDialog } from '../components/BestaetigungsDialog'
 import { MengenDialog } from '../components/MengenDialog'
@@ -30,37 +34,11 @@ type Sortierung = 'dringlichkeit' | 'name' | 'lagerort' | 'neu'
 
 const LAGERORT_REIHENFOLGE: Lagerort[] = ['Kühlschrank', 'Gefrierfach', 'Vorratsschrank']
 
-// Welche Aktion wartet auf Bestätigung? "ids" kann mehrere Einträge enthalten.
-interface AusstehendeAktion {
-  typ: 'verbraucht' | 'weggeworfen' | 'loeschen'
+// Das endgültige Löschen wartet auf Bestätigung ("ids" kann mehrere Einträge enthalten).
+interface LoeschAnfrage {
   ids: string[]
   name: string // bei genau einem Eintrag dessen Name
   endetBearbeitung?: boolean // true, wenn aus dem Bearbeiten-Formular gestartet
-}
-
-function dialogTexte(a: AusstehendeAktion) {
-  const mehrere = a.ids.length > 1
-  const objekt = mehrere ? `${a.ids.length} Lebensmittel` : `„${a.name}“`
-  switch (a.typ) {
-    case 'verbraucht':
-      return {
-        titel: 'Als verbraucht markieren?',
-        text: `${objekt} ${mehrere ? 'werden' : 'wird'} als verbraucht ins Archiv verschoben.`,
-        button: 'Verbraucht',
-      }
-    case 'weggeworfen':
-      return {
-        titel: 'Als weggeworfen markieren?',
-        text: `${objekt} ${mehrere ? 'werden' : 'wird'} als weggeworfen ins Archiv verschoben und fließt in die Bilanz ein.`,
-        button: 'Weggeworfen',
-      }
-    case 'loeschen':
-      return {
-        titel: mehrere ? 'Lebensmittel löschen?' : 'Lebensmittel löschen?',
-        text: `${objekt} ${mehrere ? 'werden' : 'wird'} unwiderruflich gelöscht (ohne Eintrag in der Bilanz).`,
-        button: 'Löschen',
-      }
-  }
 }
 
 export function Uebersicht({
@@ -73,19 +51,26 @@ export function Uebersicht({
   const [suchtext, setSuchtext] = useState('')
   const [lagerortFilter, setLagerortFilter] = useState<Lagerort | 'Alle'>('Alle')
   const [statusFilter, setStatusFilter] = useState<Status | 'Alle'>('Alle')
+  const [kategorieFilter, setKategorieFilter] = useState<Kategorie | 'Alle'>('Alle')
   const [sortierung, setSortierung] = useState<Sortierung>('dringlichkeit')
   const [bearbeitetesLebensmittel, setBearbeitetesLebensmittel] =
     useState<Lebensmittel | null>(null)
   const [mengeLebensmittel, setMengeLebensmittel] = useState<Lebensmittel | null>(null)
-  const [ausstehendeAktion, setAusstehendeAktion] = useState<AusstehendeAktion | null>(null)
+  const [loeschAnfrage, setLoeschAnfrage] = useState<LoeschAnfrage | null>(null)
   const [auswahlModus, setAuswahlModus] = useState(false)
   const [auswahl, setAuswahl] = useState<string[]>([])
+
+  // Im Filter nur Kategorien anbieten, die es bei den aktiven Lebensmitteln gibt.
+  const vorhandeneKategorien = KATEGORIEN.filter((k) =>
+    aktiveLebensmittel.some((lm) => kategorieVon(lm) === k),
+  )
 
   const gefilterteListe = useMemo(() => {
     const gefiltert = aktiveLebensmittel
       .filter((lm) => lm.name.toLowerCase().includes(suchtext.trim().toLowerCase()))
       .filter((lm) => (lagerortFilter === 'Alle' ? true : lm.lagerort === lagerortFilter))
       .filter((lm) => (statusFilter === 'Alle' ? true : berechneStatus(lm) === statusFilter))
+      .filter((lm) => (kategorieFilter === 'Alle' ? true : kategorieVon(lm) === kategorieFilter))
 
     switch (sortierung) {
       case 'name':
@@ -101,7 +86,7 @@ export function Uebersicht({
       default:
         return gefiltert.sort(vergleicheDringlichkeit)
     }
-  }, [aktiveLebensmittel, suchtext, lagerortFilter, statusFilter, sortierung])
+  }, [aktiveLebensmittel, suchtext, lagerortFilter, statusFilter, kategorieFilter, sortierung])
 
   // Nur Einträge, die es noch gibt und die gerade sichtbar sind, zählen als ausgewählt.
   const sichtbareIds = gefilterteListe.map((lm) => lm.id)
@@ -116,30 +101,29 @@ export function Uebersicht({
     setAuswahl([])
   }
 
-  function bestaetigeAktion() {
-    if (!ausstehendeAktion) return
-    if (ausstehendeAktion.typ === 'loeschen') {
-      onLoeschen(ausstehendeAktion.ids)
-    } else {
-      onAbschliessen(ausstehendeAktion.ids, ausstehendeAktion.typ)
-    }
-    if (ausstehendeAktion.endetBearbeitung) setBearbeitetesLebensmittel(null)
-    if (ausstehendeAktion.ids.length > 1) auswahlModusBeenden()
-    setAusstehendeAktion(null)
+  function sammelAbschliessen(grund: ArchivGrund) {
+    onAbschliessen(gueltigeAuswahl, grund)
+    auswahlModusBeenden()
   }
 
-  function einzelneAktion(typ: AusstehendeAktion['typ'], lm: Lebensmittel, endetBearbeitung = false) {
-    setAusstehendeAktion({ typ, ids: [lm.id], name: lm.name, endetBearbeitung })
+  function bestaetigeLoeschen() {
+    if (!loeschAnfrage) return
+    onLoeschen(loeschAnfrage.ids)
+    if (loeschAnfrage.endetBearbeitung) setBearbeitetesLebensmittel(null)
+    if (loeschAnfrage.ids.length > 1) auswahlModusBeenden()
+    setLoeschAnfrage(null)
   }
 
-  const dialog = ausstehendeAktion && (
+  const loeschDialog = loeschAnfrage && (
     <BestaetigungsDialog
-      titel={dialogTexte(ausstehendeAktion).titel}
-      text={dialogTexte(ausstehendeAktion).text}
-      bestaetigenText={dialogTexte(ausstehendeAktion).button}
-      gefahr={ausstehendeAktion.typ === 'loeschen'}
-      onBestaetigen={bestaetigeAktion}
-      onAbbrechen={() => setAusstehendeAktion(null)}
+      titel="Lebensmittel löschen?"
+      text={`${
+        loeschAnfrage.ids.length > 1 ? `${loeschAnfrage.ids.length} Lebensmittel` : `„${loeschAnfrage.name}“`
+      } ${loeschAnfrage.ids.length > 1 ? 'werden' : 'wird'} gelöscht und fließt nicht in die Bilanz ein.`}
+      bestaetigenText="Löschen"
+      gefahr
+      onBestaetigen={bestaetigeLoeschen}
+      onAbbrechen={() => setLoeschAnfrage(null)}
     />
   )
 
@@ -156,9 +140,15 @@ export function Uebersicht({
             setBearbeitetesLebensmittel(null)
           }}
           onAbbrechen={() => setBearbeitetesLebensmittel(null)}
-          onLoeschen={() => einzelneAktion('loeschen', bearbeitetesLebensmittel, true)}
+          onLoeschen={() =>
+            setLoeschAnfrage({
+              ids: [bearbeitetesLebensmittel.id],
+              name: bearbeitetesLebensmittel.name,
+              endetBearbeitung: true,
+            })
+          }
         />
-        {dialog}
+        {loeschDialog}
       </section>
     )
   }
@@ -196,18 +186,32 @@ export function Uebersicht({
           <option value="Alle">Alle Status</option>
           <option value="Frisch">Frisch</option>
           <option value="Bald prüfen">Bald prüfen</option>
-          <option value="Zeitnah verwenden oder prüfen">Zeitnah verwenden oder prüfen</option>
+          <option value="Zeitnah verwenden oder prüfen">Zeitnah verwenden</option>
+          <option value="Entsorgung empfohlen">Entsorgen</option>
         </select>
         <select
-          className="filterleiste__auswahl filterleiste__auswahl--breit"
+          className="filterleiste__auswahl"
+          value={kategorieFilter}
+          onChange={(e) => setKategorieFilter(e.target.value as Kategorie | 'Alle')}
+          aria-label="Nach Kategorie filtern"
+        >
+          <option value="Alle">Alle Kategorien</option>
+          {vorhandeneKategorien.map((k) => (
+            <option key={k} value={k}>
+              {k}
+            </option>
+          ))}
+        </select>
+        <select
+          className="filterleiste__auswahl"
           value={sortierung}
           onChange={(e) => setSortierung(e.target.value as Sortierung)}
           aria-label="Sortieren nach"
         >
-          <option value="dringlichkeit">Sortiert nach Dringlichkeit</option>
-          <option value="name">Sortiert nach Name (A–Z)</option>
-          <option value="lagerort">Sortiert nach Lagerort</option>
-          <option value="neu">Zuletzt hinzugefügt zuerst</option>
+          <option value="dringlichkeit">Dringlichkeit</option>
+          <option value="name">Name A–Z</option>
+          <option value="lagerort">Lagerort</option>
+          <option value="neu">Neueste zuerst</option>
         </select>
       </div>
 
@@ -236,8 +240,8 @@ export function Uebersicht({
               key={lebensmittel.id}
               lebensmittel={lebensmittel}
               onBearbeiten={setBearbeitetesLebensmittel}
-              onVerbraucht={(lm) => einzelneAktion('verbraucht', lm)}
-              onWeggeworfen={(lm) => einzelneAktion('weggeworfen', lm)}
+              onVerbraucht={(lm) => onAbschliessen([lm.id], 'verbraucht')}
+              onWeggeworfen={(lm) => onAbschliessen([lm.id], 'weggeworfen')}
               onRestAnpassen={setMengeLebensmittel}
               auswahlModus={auswahlModus}
               ausgewaehlt={gueltigeAuswahl.includes(lebensmittel.id)}
@@ -262,18 +266,27 @@ export function Uebersicht({
             </button>
           </div>
           <div className="auswahlleiste__aktionen">
-            {(['verbraucht', 'weggeworfen', 'loeschen'] as const).map((typ) => (
-              <Button
-                key={typ}
-                variante={typ === 'verbraucht' ? 'primaer' : typ === 'loeschen' ? 'gefahr' : 'sekundaer'}
-                disabled={gueltigeAuswahl.length === 0}
-                onClick={() =>
-                  setAusstehendeAktion({ typ, ids: gueltigeAuswahl, name: '' })
-                }
-              >
-                {typ === 'verbraucht' ? 'Verbraucht' : typ === 'weggeworfen' ? 'Weggeworfen' : 'Löschen'}
-              </Button>
-            ))}
+            <Button
+              variante="primaer"
+              disabled={gueltigeAuswahl.length === 0}
+              onClick={() => sammelAbschliessen('verbraucht')}
+            >
+              Verbraucht
+            </Button>
+            <Button
+              variante="sekundaer"
+              disabled={gueltigeAuswahl.length === 0}
+              onClick={() => sammelAbschliessen('weggeworfen')}
+            >
+              Weggeworfen
+            </Button>
+            <Button
+              variante="gefahr"
+              disabled={gueltigeAuswahl.length === 0}
+              onClick={() => setLoeschAnfrage({ ids: gueltigeAuswahl, name: '' })}
+            >
+              Löschen
+            </Button>
           </div>
         </div>
       )}
@@ -289,7 +302,7 @@ export function Uebersicht({
         />
       )}
 
-      {dialog}
+      {loeschDialog}
     </section>
   )
 }

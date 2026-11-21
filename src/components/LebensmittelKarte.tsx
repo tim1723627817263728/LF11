@@ -3,7 +3,13 @@
 // Im Auswahlmodus (Mehrfachauswahl) ersetzt eine Checkbox die Buttons.
 
 import type { Lebensmittel } from '../types/food'
-import { berechneStatus, hinweisFuerDatumsart, restzeitText, tageBisDatum } from '../utils/status'
+import {
+  berechneStatus,
+  hinweisFuerLebensmittel,
+  restzeitText,
+  tageBisFrist,
+} from '../utils/status'
+import { berechneFrist, kategorieVon } from '../utils/haltbarkeit'
 import { formatiereDatum } from '../utils/datum'
 import { formatiereMenge } from '../utils/format'
 import { StatusBadge } from './StatusBadge'
@@ -33,22 +39,36 @@ export function LebensmittelKarte({
   onAuswahlWechseln,
 }: Props) {
   const status = berechneStatus(lebensmittel)
-  const tage = tageBisDatum(lebensmittel.datum)
-  const hinweis = hinweisFuerDatumsart(lebensmittel.datumsart)
+  const tage = tageBisFrist(lebensmittel)
+  const frist = berechneFrist(lebensmittel)
+  const nachOeffnen = frist.quelle === 'geoeffnet'
+  const hinweis = hinweisFuerLebensmittel(lebensmittel)
+  const entsorgen = status === 'Entsorgung empfohlen'
+  const restzeit = (
+    <span className="karte__tage">
+      <br />
+      {restzeitText(tage)}
+    </span>
+  )
 
   return (
-    <article className={`karte${ausgewaehlt ? ' karte--gewaehlt' : ''}`}>
+    <article
+      className={`karte${ausgewaehlt ? ' karte--gewaehlt' : ''}${entsorgen ? ' karte--entsorgen' : ''}`}
+    >
       <div className="karte__kopf">
-        {auswahlModus && (
-          <input
-            type="checkbox"
-            className="karte__checkbox"
-            checked={ausgewaehlt}
-            onChange={() => onAuswahlWechseln?.(lebensmittel)}
-            aria-label={`${lebensmittel.name} auswählen`}
-          />
-        )}
-        <h3 className="karte__titel">{lebensmittel.name}</h3>
+        {/* Zeile 1: (Checkbox +) Name, Zeile 2: Status-Label */}
+        <div className="karte__titelzeile">
+          {auswahlModus && (
+            <input
+              type="checkbox"
+              className="karte__checkbox"
+              checked={ausgewaehlt}
+              onChange={() => onAuswahlWechseln?.(lebensmittel)}
+              aria-label={`${lebensmittel.name} auswählen`}
+            />
+          )}
+          <h3 className="karte__titel">{lebensmittel.name}</h3>
+        </div>
         <StatusBadge status={status} />
       </div>
 
@@ -59,12 +79,10 @@ export function LebensmittelKarte({
             {formatiereMenge(lebensmittel.menge)} {lebensmittel.einheit}
           </dd>
         </div>
-        {lebensmittel.kategorie && (
-          <div className="karte__zeile">
-            <dt>Kategorie</dt>
-            <dd>{lebensmittel.kategorie}</dd>
-          </div>
-        )}
+        <div className="karte__zeile">
+          <dt>Kategorie</dt>
+          <dd>{kategorieVon(lebensmittel)}</dd>
+        </div>
         <div className="karte__zeile">
           <dt>Lagerort</dt>
           <dd>{lebensmittel.lagerort}</dd>
@@ -73,12 +91,24 @@ export function LebensmittelKarte({
           <dt>{lebensmittel.datumsart}</dt>
           <dd>
             {formatiereDatum(lebensmittel.datum)}
-            <span className="karte__tage">
-              <br />
-              {restzeitText(tage)}
-            </span>
+            {!nachOeffnen && restzeit}
           </dd>
         </div>
+        {lebensmittel.geoeffnetAm && (
+          <div className="karte__zeile">
+            <dt>Geöffnet am</dt>
+            <dd>{formatiereDatum(lebensmittel.geoeffnetAm)}</dd>
+          </div>
+        )}
+        {nachOeffnen && (
+          <div className="karte__zeile">
+            <dt>Haltbar bis</dt>
+            <dd>
+              {formatiereDatum(frist.datum)}
+              {restzeit}
+            </dd>
+          </div>
+        )}
         {lebensmittel.notiz && (
           <div className="karte__zeile">
             <dt>Notiz</dt>
@@ -87,14 +117,20 @@ export function LebensmittelKarte({
         )}
       </dl>
 
-      <HinweisBox text={hinweis} />
+      <HinweisBox text={hinweis} warnung={entsorgen} />
 
       {!auswahlModus && (
         <div className="karte__aktionen">
-          <Button variante="primaer" onClick={() => onVerbraucht(lebensmittel)}>
+          <Button
+            variante={entsorgen ? 'sekundaer' : 'primaer'}
+            onClick={() => onVerbraucht(lebensmittel)}
+          >
             Verbraucht
           </Button>
-          <Button variante="sekundaer" onClick={() => onWeggeworfen(lebensmittel)}>
+          <Button
+            variante={entsorgen ? 'primaer' : 'sekundaer'}
+            onClick={() => onWeggeworfen(lebensmittel)}
+          >
             Weggeworfen
           </Button>
           <Button variante="sekundaer" onClick={() => onRestAnpassen(lebensmittel)}>
